@@ -22,12 +22,23 @@
 #include <fcntl.h>
 #include <ctype.h>
 
+#ifndef FALSE
+#define FALSE (0)
+#endif
+
+#ifndef TRUE
+#define TRUE  (1)
+#endif
+
 int
 main(int argc, char **argv)
 {
-    int fd;
+    FILE *fd;
     char *file = NULL;
-    unsigned char buff[16];
+    char buff[16];
+    int is_end_of_file = FALSE;
+    int file_index = 0;
+    int buffer_index = 0;
 
     if(argc != 2)
     {
@@ -35,9 +46,9 @@ main(int argc, char **argv)
         exit (1);
     }
 
-    file = argv[1];
+    file = (char *)argv[1];
 
-    fd = open(file, O_RDONLY);
+    fd = fopen(file, "r" );
 
     if(fd < 0)
     {
@@ -47,6 +58,36 @@ main(int argc, char **argv)
 
     /* Print complete file content following od hex format */
     /* od -A x -t x1z -v file.dat */
+
+    printf( "The hexadecimal format output of the command od for file %s is:\n\n", file);
+
+    while (FALSE == is_end_of_file)
+    {
+        printf("%06x ", file_index);
+        for(buffer_index = 0; buffer_index < 16; buffer_index++)
+        {
+           	buff[buffer_index] = getc(fd); 
+           	if(EOF == buff[buffer_index])
+           	{
+				is_end_of_file = TRUE;
+				buff[buffer_index] = '\0';
+               	printf("   ");
+              
+           	}
+           	else
+           	{
+           		printf("%02x ", (int)buff[buffer_index]);
+           		file_index++;
+           		if('\n' == buff[buffer_index])
+           		{
+           			buff[buffer_index] = '.';
+           		}
+           	}
+        }
+        printf(">");
+        printf("%s",buff);    	
+        printf("<\n"); 
+    }
 
     close (fd);
 
